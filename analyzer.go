@@ -55,7 +55,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			if err != nil {
 				continue
 			}
-			decision := cfg.CanDepend(currentLayer.Name, []string{importPath})
+			decision := cfg.CanDepend(currentLayer.Name, importPath)
 			if decision == DecisionDeny {
 				pass.Reportf(spec.Pos(), "%s cannot be imported by %s", spec.Path.Value, currentLayer.Name)
 			}

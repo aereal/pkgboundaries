@@ -24,20 +24,20 @@ func TestConfig_CanDepend(t *testing.T) {
 	}
 	type args struct {
 		dependantLayerName string
-		dependencyPackages []string
+		dependency         string
 	}
 	testCases := []struct {
 		name       string
 		args       args
 		wantEffect onion.Decision
 	}{
-		{"ok", args{"a", []string{"pkg/3", "pkg/4"}}, onion.DecisionAllow},
-		{"ng", args{"a", []string{"pkg/5", "pkg/6"}}, onion.DecisionDeny},
-		{"ng (unknown)", args{"a", []string{"pkg/x"}}, onion.DecisionAllow},
+		{"ok", args{"a", "pkg/3"}, onion.DecisionAllow},
+		{"ng", args{"a", "pkg/5"}, onion.DecisionDeny},
+		{"ng (unknown)", args{"a", "pkg/x"}, onion.DecisionAllow},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := cfg.CanDepend(tc.args.dependantLayerName, tc.args.dependencyPackages)
+			got := cfg.CanDepend(tc.args.dependantLayerName, tc.args.dependency)
 			if got != tc.wantEffect {
 				t.Errorf("want=%s got=%s", tc.wantEffect, got)
 			}

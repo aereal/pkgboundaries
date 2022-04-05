@@ -179,22 +179,19 @@ type Config struct {
 	Rules  []*Rule
 }
 
-func layersForPackages(layers *LayersSet, pkgs *PackagesSet) *LayersSet {
+func layersForPackages(layers *LayersSet, pkg string) *LayersSet {
 	x := LayersSet{set: map[string]int{}}
-	for _, pkgName := range pkgs.items() {
-		for _, layer := range layers.items() {
-			layer := layer
-			if layer.Packages.contains(pkgName) {
-				x.add(layer)
-			}
+	for _, layer := range layers.items() {
+		layer := layer
+		if layer.Packages.contains(pkg) {
+			x.add(layer)
 		}
 	}
 	return &x
 }
 
-func (c *Config) CanDepend(dependantLayerName string, dependencyPkgs []string) Decision {
-	depPkgs := NewPackagesSet(dependencyPkgs...)
-	layers := layersForPackages(c.Layers, depPkgs)
+func (c *Config) CanDepend(dependantLayerName string, dependency string) Decision {
+	layers := layersForPackages(c.Layers, dependency)
 	fmt.Printf("layers: %#v\n", layers)
 	for _, rule := range c.Rules {
 		if rule.Layer != dependantLayerName {
