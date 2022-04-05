@@ -11,36 +11,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-func TestConfig_FindLayer(t *testing.T) {
-	testCases := []struct {
-		label     string
-		config    *onion.Config
-		layerName string
-		wantFound bool
-	}{
-		{"ok", &onion.Config{Layers: onion.NewLayersSet(&onion.Layer{Name: "a"})}, "a", true},
-		{"not found", &onion.Config{Layers: onion.NewLayersSet(&onion.Layer{Name: "a"})}, "b", false},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.label, func(t *testing.T) {
-			got := tc.config.FindLayer(tc.layerName)
-			var (
-				wantName string
-				gotName  string
-			)
-			if tc.wantFound {
-				if got != nil {
-					gotName = got.Name
-				}
-				wantName = tc.layerName
-			}
-			if gotName != wantName {
-				t.Errorf("return value: want=%s got=%s", tc.layerName, gotName)
-			}
-		})
-	}
-}
-
 func TestConfig_CanDepend(t *testing.T) {
 	cfg := &onion.Config{
 		Layers: onion.NewLayersSet(

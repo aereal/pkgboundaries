@@ -2,7 +2,6 @@ package onion
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -27,7 +26,7 @@ var _ interface {
 } = &PackagesSet{}
 
 func (ps PackagesSet) MarshalJSON() ([]byte, error) {
-	return json.Marshal(ps.Items())
+	return json.Marshal(ps.items())
 }
 
 func (ps *PackagesSet) UnmarshalJSON(b []byte) error {
@@ -42,7 +41,7 @@ func (ps *PackagesSet) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (s *PackagesSet) Items() []string {
+func (s *PackagesSet) items() []string {
 	return s.xs
 }
 
@@ -54,14 +53,14 @@ func (s *PackagesSet) add(pkg string) {
 func (s *PackagesSet) GoString() string {
 	b := new(strings.Builder)
 	b.WriteString("PackagesSet(")
-	for _, pkg := range s.Items() {
+	for _, pkg := range s.items() {
 		fmt.Fprintf(b, " %q", pkg)
 	}
 	b.WriteString(" )")
 	return b.String()
 }
 
-func (s *PackagesSet) Contains(pkgName string) bool {
+func (s *PackagesSet) contains(pkgName string) bool {
 	return s.set[pkgName]
 }
 
@@ -105,7 +104,7 @@ func (r *Rule) deter(layer *Layer) Decision {
 
 func (r *Rule) determinate(layers *LayersSet) Decision {
 	x := DecisionAllow
-	for _, layer := range layers.Items() {
+	for _, layer := range layers.items() {
 		x = x.And(r.deter(layer))
 	}
 	return x
@@ -131,7 +130,7 @@ var _ interface {
 } = &LayersSet{}
 
 func (l LayersSet) MarshalJSON() ([]byte, error) {
-	return json.Marshal(l.Items())
+	return json.Marshal(l.items())
 }
 
 func (l *LayersSet) UnmarshalJSON(b []byte) error {
@@ -147,14 +146,14 @@ func (l *LayersSet) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (ls *LayersSet) Items() []*Layer {
+func (ls *LayersSet) items() []*Layer {
 	return ls.xs
 }
 
 func (ls *LayersSet) GoString() string {
 	b := new(strings.Builder)
 	b.WriteString("LayersSet(")
-	for _, layer := range ls.Items() {
+	for _, layer := range ls.items() {
 		fmt.Fprintf(b, " %#v", layer)
 	}
 	b.WriteString(" )")
@@ -166,17 +165,9 @@ func (s *LayersSet) add(layer *Layer) {
 	s.set[layer.Name] = len(s.xs) - 1
 }
 
-func (s *LayersSet) Find(name string) *Layer {
-	i, ok := s.set[name]
-	if !ok {
-		return nil
-	}
-	return s.xs[i]
-}
-
-func (s *LayersSet) FromPackagePath(pkgPath string) *Layer {
-	for _, layer := range s.Items() {
-		if layer.Packages.Contains(pkgPath) {
+func (s *LayersSet) findByPackagePath(pkgPath string) *Layer {
+	for _, layer := range s.items() {
+		if layer.Packages.contains(pkgPath) {
 			return layer
 		}
 	}
@@ -188,18 +179,12 @@ type Config struct {
 	Rules  []*Rule
 }
 
-var ErrLayerNotFound = errors.New("layer not found")
-
-func (c *Config) FindLayer(layerName string) *Layer {
-	return c.Layers.Find(layerName)
-}
-
 func layersForPackages(layers *LayersSet, pkgs *PackagesSet) *LayersSet {
 	x := LayersSet{set: map[string]int{}}
-	for _, pkgName := range pkgs.Items() {
-		for _, layer := range layers.Items() {
+	for _, pkgName := range pkgs.items() {
+		for _, layer := range layers.items() {
 			layer := layer
-			if layer.Packages.Contains(pkgName) {
+			if layer.Packages.contains(pkgName) {
 				x.add(layer)
 			}
 		}
