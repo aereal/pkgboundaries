@@ -24,7 +24,7 @@ func TestConfig_CanDepend(t *testing.T) {
 	}
 	type args struct {
 		dependantLayerName string
-		dependency         string
+		dependency         onion.Package
 	}
 	testCases := []struct {
 		name       string
@@ -114,7 +114,7 @@ func TestConfig_Marshaling(t *testing.T) {
 	if err := json.Unmarshal(marshaled, &got); err != nil {
 		t.Fatal(err)
 	}
-	if diff := cmp.Diff(want, &got, cmpopts.IgnoreUnexported(onion.PackagesSet{}, onion.LayersSet{})); diff != "" {
+	if diff := cmp.Diff(want, &got, cmpopts.IgnoreUnexported(onion.OrderedSet[onion.Package]{}, onion.OrderedSet[*onion.Layer]{})); diff != "" {
 		t.Errorf("json.Unmarshal (-want, +got):\n%s", diff)
 	}
 }

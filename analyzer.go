@@ -44,7 +44,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	if err := json.NewDecoder(f).Decode(&cfg); err != nil {
 		return nil, err
 	}
-	currentLayer := cfg.Layers.findByPackagePath(pass.Pkg.Path())
+	currentLayer := (*LayersSet)(cfg.Layers).findByPackagePath(pass.Pkg.Path())
 	if currentLayer == nil {
 		return nil, nil
 	}
@@ -55,7 +55,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			if err != nil {
 				continue
 			}
-			decision := cfg.CanDepend(currentLayer.Name, importPath)
+			decision := cfg.CanDepend(currentLayer.Name, Package(importPath))
 			if decision == DecisionDeny {
 				pass.Reportf(spec.Pos(), "%s cannot be imported by %s", spec.Path.Value, currentLayer.Name)
 			}
