@@ -6,8 +6,12 @@ import (
 	"strings"
 )
 
+func initPkgs() *PackagesSet {
+	return &PackagesSet{set: map[string]bool{}}
+}
+
 func NewPackagesSet(pkgNames ...string) *PackagesSet {
-	x := &PackagesSet{set: map[string]bool{}}
+	x := initPkgs()
 	for _, pkg := range pkgNames {
 		x.add(pkg)
 	}
@@ -34,7 +38,8 @@ func (ps *PackagesSet) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &xs); err != nil {
 		return err
 	}
-	*ps = PackagesSet{set: map[string]bool{}}
+	p := initPkgs()
+	*ps = *p
 	for _, x := range xs {
 		ps.add(x)
 	}
@@ -110,12 +115,16 @@ func (r *Rule) determinate(layers *LayersSet) Decision {
 	return x
 }
 
+func initLayers() *LayersSet {
+	return &LayersSet{set: map[string]int{}}
+}
+
 func NewLayersSet(layers ...*Layer) *LayersSet {
-	x := LayersSet{set: map[string]int{}}
+	x := initLayers()
 	for _, layer := range layers {
 		x.add(layer)
 	}
-	return &x
+	return x
 }
 
 // LayersSet is an ordered set of layers.
@@ -138,7 +147,8 @@ func (l *LayersSet) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &xs); err != nil {
 		return err
 	}
-	*l = LayersSet{set: map[string]int{}}
+	ls := initLayers()
+	*l = *ls
 	for _, x := range xs {
 		x := x
 		l.add(x)
@@ -180,14 +190,14 @@ type Config struct {
 }
 
 func layersForPackages(layers *LayersSet, pkg string) *LayersSet {
-	x := LayersSet{set: map[string]int{}}
+	x := initLayers()
 	for _, layer := range layers.items() {
 		layer := layer
 		if layer.Packages.contains(pkg) {
 			x.add(layer)
 		}
 	}
-	return &x
+	return x
 }
 
 func (c *Config) CanDepend(dependantLayerName string, dependency string) Decision {
