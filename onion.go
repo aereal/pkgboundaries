@@ -192,7 +192,6 @@ func layersForPackages(layers *LayersSet, pkg string) *LayersSet {
 
 func (c *Config) CanDepend(dependantLayerName string, dependency string) Decision {
 	layers := layersForPackages(c.Layers, dependency)
-	fmt.Printf("layers: %#v\n", layers)
 	for _, rule := range c.Rules {
 		if rule.Layer != dependantLayerName {
 			continue
