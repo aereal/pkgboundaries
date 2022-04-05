@@ -11,36 +11,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-func TestConfig_FindLayer(t *testing.T) {
-	testCases := []struct {
-		label     string
-		config    *onion.Config
-		layerName string
-		wantFound bool
-	}{
-		{"ok", &onion.Config{Layers: onion.NewLayersSet(&onion.Layer{Name: "a"})}, "a", true},
-		{"not found", &onion.Config{Layers: onion.NewLayersSet(&onion.Layer{Name: "a"})}, "b", false},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.label, func(t *testing.T) {
-			got := tc.config.FindLayer(tc.layerName)
-			var (
-				wantName string
-				gotName  string
-			)
-			if tc.wantFound {
-				if got != nil {
-					gotName = got.Name
-				}
-				wantName = tc.layerName
-			}
-			if gotName != wantName {
-				t.Errorf("return value: want=%s got=%s", tc.layerName, gotName)
-			}
-		})
-	}
-}
-
 func TestConfig_CanDepend(t *testing.T) {
 	cfg := &onion.Config{
 		Layers: onion.NewLayersSet(
@@ -49,25 +19,25 @@ func TestConfig_CanDepend(t *testing.T) {
 			&onion.Layer{Name: "c", Packages: onion.NewPackagesSet("pkg/5", "pkg/6")},
 		),
 		Rules: []*onion.Rule{
-			{DependantLayer: "a", AllowedLayerNames: []string{"b"}},
+			{Layer: "a", Allowed: []string{"b"}},
 		},
 	}
 	type args struct {
 		dependantLayerName string
-		dependencyPackages []string
+		dependency         onion.Package
 	}
 	testCases := []struct {
 		name       string
 		args       args
 		wantEffect onion.Decision
 	}{
-		{"ok", args{"a", []string{"pkg/3", "pkg/4"}}, onion.DecisionAllow},
-		{"ng", args{"a", []string{"pkg/5", "pkg/6"}}, onion.DecisionDeny},
-		{"ng (unknown)", args{"a", []string{"pkg/x"}}, onion.DecisionAllow},
+		{"ok", args{"a", "pkg/3"}, onion.DecisionAllow},
+		{"ng", args{"a", "pkg/5"}, onion.DecisionDeny},
+		{"ng (unknown)", args{"a", "pkg/x"}, onion.DecisionAllow},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := cfg.CanDepend(tc.args.dependantLayerName, tc.args.dependencyPackages)
+			got := cfg.CanDepend(tc.args.dependantLayerName, tc.args.dependency)
 			if got != tc.wantEffect {
 				t.Errorf("want=%s got=%s", tc.wantEffect, got)
 			}
@@ -112,9 +82,9 @@ func TestConfig_Marshaling(t *testing.T) {
 	want := &onion.Config{
 		Rules: []*onion.Rule{
 			{
-				DependantLayer:    "App",
-				AllowedLayerNames: []string{"Errors"},
-				DeniedLayerNames:  []string{"Print"},
+				Layer:   "App",
+				Allowed: []string{"Errors"},
+				Denied:  []string{"Print"},
 			},
 		},
 		Layers: onion.NewLayersSet(
@@ -144,7 +114,7 @@ func TestConfig_Marshaling(t *testing.T) {
 	if err := json.Unmarshal(marshaled, &got); err != nil {
 		t.Fatal(err)
 	}
-	if diff := cmp.Diff(want, &got, cmpopts.IgnoreUnexported(onion.PackagesSet{}, onion.LayersSet{})); diff != "" {
+	if diff := cmp.Diff(want, &got, cmpopts.IgnoreUnexported(onion.OrderedSet[onion.Package]{}, onion.OrderedSet[*onion.Layer]{})); diff != "" {
 		t.Errorf("json.Unmarshal (-want, +got):\n%s", diff)
 	}
 }

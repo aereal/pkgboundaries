@@ -2,71 +2,30 @@ package onion
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 )
 
-func NewPackagesSet(pkgNames ...string) *PackagesSet {
-	x := &PackagesSet{set: map[string]bool{}}
+func NewPackagesSet(pkgNames ...string) *OrderedSet[Package] {
+	x := initOrderedSet[Package]()
 	for _, pkg := range pkgNames {
-		x.add(pkg)
+		x.add(Package(pkg))
 	}
 	return x
 }
 
-type PackagesSet struct {
-	xs  []string
-	set map[string]bool
-}
+type Package string
 
-var _ interface {
-	json.Marshaler
-	json.Unmarshaler
-} = &PackagesSet{}
+func (p Package) Key() string { return string(p) }
 
-func (ps PackagesSet) MarshalJSON() ([]byte, error) {
-	return json.Marshal(ps.Items())
-}
-
-func (ps *PackagesSet) UnmarshalJSON(b []byte) error {
-	var xs []string
-	if err := json.Unmarshal(b, &xs); err != nil {
-		return err
-	}
-	*ps = PackagesSet{set: map[string]bool{}}
-	for _, x := range xs {
-		ps.add(x)
-	}
-	return nil
-}
-
-func (s *PackagesSet) Items() []string {
-	return s.xs
-}
-
-func (s *PackagesSet) add(pkg string) {
-	s.xs = append(s.xs, pkg)
-	s.set[pkg] = true
-}
-
-func (s *PackagesSet) GoString() string {
-	b := new(strings.Builder)
-	b.WriteString("PackagesSet(")
-	for _, pkg := range s.Items() {
-		fmt.Fprintf(b, " %q", pkg)
-	}
-	b.WriteString(" )")
-	return b.String()
-}
-
-func (s *PackagesSet) Contains(pkgName string) bool {
-	return s.set[pkgName]
-}
-
+// Layer is a named set of packages.
 type Layer struct {
 	Name     string
-	Packages *PackagesSet
+	Packages *OrderedSet[Package]
+}
+
+func (l *Layer) Key() string {
+	return l.Name
 }
 
 func (l *Layer) GoString() string {
@@ -75,19 +34,25 @@ func (l *Layer) GoString() string {
 	return b.String()
 }
 
+// Rule is a pair of Layer and allowed/denied layers list.
 type Rule struct {
-	DependantLayer    string
-	AllowedLayerNames []string
-	DeniedLayerNames  []string
+	// Layer is a layer name applies the rule.
+	Layer string
+
+	// Allowed is layer names list that can be appeared in dependency list.
+	Allowed []string
+
+	// Denied is layer names list that can NOT be appeared in dependency list.
+	Denied []string
 }
 
 func (r *Rule) deter(layer *Layer) Decision {
-	for _, layerName := range r.AllowedLayerNames {
+	for _, layerName := range r.Allowed {
 		if layer.Name == layerName {
 			return DecisionAllow
 		}
 	}
-	for _, layerName := range r.DeniedLayerNames {
+	for _, layerName := range r.Denied {
 		if layer.Name == layerName {
 			return DecisionDeny
 		}
@@ -95,79 +60,34 @@ func (r *Rule) deter(layer *Layer) Decision {
 	return DecisionDeny
 }
 
-func (r *Rule) determinate(layers *LayersSet) Decision {
+func (r *Rule) determinate(layers *OrderedSet[*Layer]) Decision {
 	x := DecisionAllow
-	for _, layer := range layers.Items() {
+	for _, layer := range layers.items() {
 		x = x.And(r.deter(layer))
 	}
 	return x
 }
 
-func NewLayersSet(layers ...*Layer) *LayersSet {
-	x := LayersSet{set: map[string]int{}}
+func NewLayersSet(layers ...*Layer) *OrderedSet[*Layer] {
+	x := initOrderedSet[*Layer]()
 	for _, layer := range layers {
 		x.add(layer)
 	}
-	return &x
+	return x
 }
 
-type LayersSet struct {
-	xs  []*Layer
-	set map[string]int
+// LayersSet is an ordered set of layers.
+type LayersSet OrderedSet[*Layer]
+
+func (s *LayersSet) toSet() *OrderedSet[*Layer] {
+	a := *s
+	b := OrderedSet[*Layer](a)
+	return &b
 }
 
-var _ interface {
-	json.Marshaler
-	json.Unmarshaler
-} = &LayersSet{}
-
-func (l LayersSet) MarshalJSON() ([]byte, error) {
-	return json.Marshal(l.Items())
-}
-
-func (l *LayersSet) UnmarshalJSON(b []byte) error {
-	var xs []*Layer
-	if err := json.Unmarshal(b, &xs); err != nil {
-		return err
-	}
-	*l = LayersSet{set: map[string]int{}}
-	for _, x := range xs {
-		x := x
-		l.add(x)
-	}
-	return nil
-}
-
-func (ls *LayersSet) Items() []*Layer {
-	return ls.xs
-}
-
-func (ls *LayersSet) GoString() string {
-	b := new(strings.Builder)
-	b.WriteString("LayersSet(")
-	for _, layer := range ls.Items() {
-		fmt.Fprintf(b, " %#v", layer)
-	}
-	b.WriteString(" )")
-	return b.String()
-}
-
-func (s *LayersSet) add(layer *Layer) {
-	s.xs = append(s.xs, layer)
-	s.set[layer.Name] = len(s.xs) - 1
-}
-
-func (s *LayersSet) Find(name string) *Layer {
-	i, ok := s.set[name]
-	if !ok {
-		return nil
-	}
-	return s.xs[i]
-}
-
-func (s *LayersSet) FromPackagePath(pkgPath string) *Layer {
-	for _, layer := range s.Items() {
-		if layer.Packages.Contains(pkgPath) {
+func (s *LayersSet) findByPackagePath(pkgPath string) *Layer {
+	for _, layer := range s.toSet().items() {
+		if layer.Packages.contains(Package(pkgPath)) {
 			return layer
 		}
 	}
@@ -175,35 +95,25 @@ func (s *LayersSet) FromPackagePath(pkgPath string) *Layer {
 }
 
 type Config struct {
-	Layers *LayersSet
+	Layers *OrderedSet[*Layer]
 	Rules  []*Rule
 }
 
-var ErrLayerNotFound = errors.New("layer not found")
-
-func (c *Config) FindLayer(layerName string) *Layer {
-	return c.Layers.Find(layerName)
-}
-
-func layersForPackages(layers *LayersSet, pkgs *PackagesSet) *LayersSet {
-	x := LayersSet{set: map[string]int{}}
-	for _, pkgName := range pkgs.Items() {
-		for _, layer := range layers.Items() {
-			layer := layer
-			if layer.Packages.Contains(pkgName) {
-				x.add(layer)
-			}
+func layersForPackages(layers *OrderedSet[*Layer], pkg Package) *OrderedSet[*Layer] {
+	x := initOrderedSet[*Layer]()
+	for _, layer := range layers.items() {
+		layer := layer
+		if layer.Packages.contains(pkg) {
+			x.add(layer)
 		}
 	}
-	return &x
+	return x
 }
 
-func (c *Config) CanDepend(dependantLayerName string, dependencyPkgs []string) Decision {
-	depPkgs := NewPackagesSet(dependencyPkgs...)
-	layers := layersForPackages(c.Layers, depPkgs)
-	fmt.Printf("layers: %#v\n", layers)
+func (c *Config) CanDepend(dependantLayerName string, dependency Package) Decision {
+	layers := layersForPackages(c.Layers, dependency)
 	for _, rule := range c.Rules {
-		if rule.DependantLayer != dependantLayerName {
+		if rule.Layer != dependantLayerName {
 			continue
 		}
 		return rule.determinate(layers)
@@ -235,3 +145,46 @@ const (
 	DecisionDeny Decision = iota
 	DecisionAllow
 )
+
+func initOrderedSet[T interface{ Key() string }]() *OrderedSet[T] {
+	return &OrderedSet[T]{set: map[string]int{}}
+}
+
+type OrderedSet[T interface{ Key() string }] struct {
+	xs  []T
+	set map[string]int
+}
+
+func (s *OrderedSet[T]) add(x T) {
+	if _, found := s.set[x.Key()]; found {
+		return
+	}
+	s.xs = append(s.xs, x)
+	s.set[x.Key()] = len(s.xs) - 1
+}
+
+func (s *OrderedSet[T]) items() []T {
+	return s.xs
+}
+
+func (s *OrderedSet[T]) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.items())
+}
+
+func (s *OrderedSet[T]) UnmarshalJSON(b []byte) error {
+	var vals []T
+	if err := json.Unmarshal(b, &vals); err != nil {
+		return err
+	}
+	xs := &OrderedSet[T]{set: map[string]int{}}
+	for _, x := range vals {
+		xs.add(x)
+	}
+	*s = *xs
+	return nil
+}
+
+func (s *OrderedSet[T]) contains(x T) bool {
+	_, ok := s.set[x.Key()]
+	return ok
+}
