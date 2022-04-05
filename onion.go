@@ -15,6 +15,7 @@ func NewPackagesSet(pkgNames ...string) *PackagesSet {
 	return x
 }
 
+// PackagesSet is an ordered set of packages.
 type PackagesSet struct {
 	xs  []string
 	set map[string]bool
@@ -64,6 +65,7 @@ func (s *PackagesSet) Contains(pkgName string) bool {
 	return s.set[pkgName]
 }
 
+// Layer is a named set of packages.
 type Layer struct {
 	Name     string
 	Packages *PackagesSet
@@ -75,19 +77,25 @@ func (l *Layer) GoString() string {
 	return b.String()
 }
 
+// Rule is a pair of Layer and allowed/denied layers list.
 type Rule struct {
-	DependantLayer    string
-	AllowedLayerNames []string
-	DeniedLayerNames  []string
+	// Layer is a layer name applies the rule.
+	Layer string
+
+	// Allowed is layer names list that can be appeared in dependency list.
+	Allowed []string
+
+	// Denied is layer names list that can NOT be appeared in dependency list.
+	Denied []string
 }
 
 func (r *Rule) deter(layer *Layer) Decision {
-	for _, layerName := range r.AllowedLayerNames {
+	for _, layerName := range r.Allowed {
 		if layer.Name == layerName {
 			return DecisionAllow
 		}
 	}
-	for _, layerName := range r.DeniedLayerNames {
+	for _, layerName := range r.Denied {
 		if layer.Name == layerName {
 			return DecisionDeny
 		}
@@ -111,6 +119,7 @@ func NewLayersSet(layers ...*Layer) *LayersSet {
 	return &x
 }
 
+// LayersSet is an ordered set of layers.
 type LayersSet struct {
 	xs  []*Layer
 	set map[string]int
@@ -203,7 +212,7 @@ func (c *Config) CanDepend(dependantLayerName string, dependencyPkgs []string) D
 	layers := layersForPackages(c.Layers, depPkgs)
 	fmt.Printf("layers: %#v\n", layers)
 	for _, rule := range c.Rules {
-		if rule.DependantLayer != dependantLayerName {
+		if rule.Layer != dependantLayerName {
 			continue
 		}
 		return rule.determinate(layers)

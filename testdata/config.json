@@ -22,11 +22,11 @@
   ],
   "Rules": [
     {
-      "DependantLayer": "App",
-      "AllowedLayerNames": [
+      "Layer": "App",
+      "Allowed": [
         "Errors"
       ],
-      "DeniedLayerNames": [
+      "Denied": [
         "Print"
       ]
     }

@@ -49,7 +49,7 @@ func TestConfig_CanDepend(t *testing.T) {
 			&onion.Layer{Name: "c", Packages: onion.NewPackagesSet("pkg/5", "pkg/6")},
 		),
 		Rules: []*onion.Rule{
-			{DependantLayer: "a", AllowedLayerNames: []string{"b"}},
+			{Layer: "a", Allowed: []string{"b"}},
 		},
 	}
 	type args struct {
@@ -112,9 +112,9 @@ func TestConfig_Marshaling(t *testing.T) {
 	want := &onion.Config{
 		Rules: []*onion.Rule{
 			{
-				DependantLayer:    "App",
-				AllowedLayerNames: []string{"Errors"},
-				DeniedLayerNames:  []string{"Print"},
+				Layer:   "App",
+				Allowed: []string{"Errors"},
+				Denied:  []string{"Print"},
 			},
 		},
 		Layers: onion.NewLayersSet(
