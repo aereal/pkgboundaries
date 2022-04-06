@@ -18,6 +18,10 @@ type Package string
 
 func (p Package) Key() string { return string(p) }
 
+func containPackage(pkgNames *OrderedSet[Package], pkg Package) bool {
+	return pkgNames.contains(pkg)
+}
+
 // Layer is a named set of packages.
 type Layer struct {
 	Name         string
@@ -87,7 +91,7 @@ func (s *LayersSet) toSet() *OrderedSet[*Layer] {
 
 func (s *LayersSet) findByPackagePath(pkgPath string) *Layer {
 	for _, layer := range s.toSet().items() {
-		if layer.PackageNames.contains(Package(pkgPath)) {
+		if containPackage(layer.PackageNames, Package(pkgPath)) {
 			return layer
 		}
 	}
@@ -103,7 +107,7 @@ func layersForPackages(layers *OrderedSet[*Layer], pkg Package) *OrderedSet[*Lay
 	x := initOrderedSet[*Layer]()
 	for _, layer := range layers.items() {
 		layer := layer
-		if layer.PackageNames.contains(pkg) {
+		if containPackage(layer.PackageNames, pkg) {
 			x.add(layer)
 		}
 	}
