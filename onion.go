@@ -20,8 +20,8 @@ func (p Package) Key() string { return string(p) }
 
 // Layer is a named set of packages.
 type Layer struct {
-	Name     string
-	Packages *OrderedSet[Package]
+	Name         string
+	PackageNames *OrderedSet[Package]
 }
 
 func (l *Layer) Key() string {
@@ -30,7 +30,7 @@ func (l *Layer) Key() string {
 
 func (l *Layer) GoString() string {
 	b := new(strings.Builder)
-	fmt.Fprintf(b, "Layer( %q %#v )", l.Name, l.Packages)
+	fmt.Fprintf(b, "Layer( %q %#v )", l.Name, l.PackageNames)
 	return b.String()
 }
 
@@ -87,7 +87,7 @@ func (s *LayersSet) toSet() *OrderedSet[*Layer] {
 
 func (s *LayersSet) findByPackagePath(pkgPath string) *Layer {
 	for _, layer := range s.toSet().items() {
-		if layer.Packages.contains(Package(pkgPath)) {
+		if layer.PackageNames.contains(Package(pkgPath)) {
 			return layer
 		}
 	}
@@ -103,7 +103,7 @@ func layersForPackages(layers *OrderedSet[*Layer], pkg Package) *OrderedSet[*Lay
 	x := initOrderedSet[*Layer]()
 	for _, layer := range layers.items() {
 		layer := layer
-		if layer.Packages.contains(pkg) {
+		if layer.PackageNames.contains(pkg) {
 			x.add(layer)
 		}
 	}

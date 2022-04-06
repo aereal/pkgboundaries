@@ -14,9 +14,9 @@ import (
 func TestConfig_CanDepend(t *testing.T) {
 	cfg := &onion.Config{
 		Layers: onion.NewLayersSet(
-			&onion.Layer{Name: "a", Packages: onion.NewPackagesSet("pkg/1", "pkg/2")},
-			&onion.Layer{Name: "b", Packages: onion.NewPackagesSet("pkg/3", "pkg/4")},
-			&onion.Layer{Name: "c", Packages: onion.NewPackagesSet("pkg/5", "pkg/6")},
+			&onion.Layer{Name: "a", PackageNames: onion.NewPackagesSet("pkg/1", "pkg/2")},
+			&onion.Layer{Name: "b", PackageNames: onion.NewPackagesSet("pkg/3", "pkg/4")},
+			&onion.Layer{Name: "c", PackageNames: onion.NewPackagesSet("pkg/5", "pkg/6")},
 		),
 		Rules: []*onion.Rule{
 			{Layer: "a", Allowed: []string{"b"}},
@@ -89,16 +89,16 @@ func TestConfig_Marshaling(t *testing.T) {
 		},
 		Layers: onion.NewLayersSet(
 			&onion.Layer{
-				Name:     "App",
-				Packages: onion.NewPackagesSet("github.com/aereal/a"),
+				Name:         "App",
+				PackageNames: onion.NewPackagesSet("github.com/aereal/a"),
 			},
 			&onion.Layer{
-				Name:     "Errors",
-				Packages: onion.NewPackagesSet("errors"),
+				Name:         "Errors",
+				PackageNames: onion.NewPackagesSet("errors"),
 			},
 			&onion.Layer{
-				Name:     "Print",
-				Packages: onion.NewPackagesSet("fmt", "log"),
+				Name:         "Print",
+				PackageNames: onion.NewPackagesSet("fmt", "log"),
 			},
 		),
 	}

@@ -2,19 +2,19 @@
   "Layers": [
     {
       "Name": "App",
-      "Packages": [
+      "PackageNames": [
         "github.com/aereal/a"
       ]
     },
     {
       "Name": "Errors",
-      "Packages": [
+      "PackageNames": [
         "errors"
       ]
     },
     {
       "Name": "Print",
-      "Packages": [
+      "PackageNames": [
         "fmt",
         "log"
       ]
