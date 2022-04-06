@@ -18,6 +18,12 @@
         "fmt",
         "log"
       ]
+    },
+    {
+      "Name": "Encoding",
+      "PackageNamePatterns": [
+        "^encoding/"
+      ]
     }
   ],
   "Rules": [
@@ -27,7 +33,8 @@
         "Errors"
       ],
       "Denied": [
-        "Print"
+        "Print",
+        "Encoding"
       ]
     }
   ]

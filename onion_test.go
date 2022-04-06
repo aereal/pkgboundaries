@@ -84,7 +84,7 @@ func TestConfig_Marshaling(t *testing.T) {
 			{
 				Layer:   "App",
 				Allowed: []string{"Errors"},
-				Denied:  []string{"Print"},
+				Denied:  []string{"Print", "Encoding"},
 			},
 		},
 		Layers: onion.NewLayersSet(
@@ -99,6 +99,10 @@ func TestConfig_Marshaling(t *testing.T) {
 			&onion.Layer{
 				Name:         "Print",
 				PackageNames: onion.NewPackagesSet("fmt", "log"),
+			},
+			&onion.Layer{
+				Name:                "Encoding",
+				PackageNamePatterns: onion.NewPackagePatternSet(onion.PackagePattern("^encoding/")),
 			},
 		),
 	}
