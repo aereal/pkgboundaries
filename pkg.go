@@ -6,13 +6,14 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/aereal/pkgboundaries/internal/sets"
 	"github.com/itchyny/rassemble-go"
 )
 
-func NewPackagesSet(pkgNames ...string) *OrderedSet[Package] {
-	x := initOrderedSet[Package]()
+func NewPackagesSet(pkgNames ...string) *sets.OrderedSet[Package] {
+	x := sets.NewOrderedSet[Package]()
 	for _, pkg := range pkgNames {
-		x.add(Package(pkg))
+		x.Add(Package(pkg))
 	}
 	return x
 }
@@ -23,15 +24,12 @@ func (p Package) Key() string { return string(p) }
 
 func NewPackagePatternSet(patterns ...PackagePattern) *PackagePatternSet {
 	ps := &PackagePatternSet{}
-	ps.set = initOrderedSet[PackagePattern]()
-	for _, pattern := range patterns {
-		ps.set.add(pattern)
-	}
+	ps.set = sets.NewOrderedSet(patterns...)
 	return ps
 }
 
 type PackagePatternSet struct {
-	set             *OrderedSet[PackagePattern]
+	set             *sets.OrderedSet[PackagePattern]
 	compiledPattern *regexp.Regexp
 	compileErr      error
 	compiled        bool
@@ -42,7 +40,7 @@ func (ps *PackagePatternSet) MarshalJSON() ([]byte, error) {
 }
 
 func (ps *PackagePatternSet) UnmarshalJSON(b []byte) error {
-	var x OrderedSet[PackagePattern]
+	var x sets.OrderedSet[PackagePattern]
 	if err := json.Unmarshal(b, &x); err != nil {
 		return err
 	}
@@ -57,7 +55,7 @@ func (ps *PackagePatternSet) compileOnce() {
 	defer func() {
 		ps.compiled = true
 	}()
-	patterns := ps.set.items()
+	patterns := ps.set.Items()
 	exprs := make([]string, len(patterns))
 	for i, pattern := range patterns {
 		exprs[i] = string(pattern)
@@ -87,9 +85,9 @@ func (p PackagePattern) Key() string {
 	return string(p)
 }
 
-func containPackage(pkgNames *OrderedSet[Package], pkgPatterns *PackagePatternSet, pkg Package) bool {
+func containPackage(pkgNames *sets.OrderedSet[Package], pkgPatterns *PackagePatternSet, pkg Package) bool {
 	if pkgNames != nil {
-		if pkgNames.contains(pkg) {
+		if pkgNames.Has(pkg) {
 			return true
 		}
 	}
@@ -104,7 +102,7 @@ func containPackage(pkgNames *OrderedSet[Package], pkgPatterns *PackagePatternSe
 // Layer is a named set of packages.
 type Layer struct {
 	Name                string
-	PackageNames        *OrderedSet[Package]
+	PackageNames        *sets.OrderedSet[Package]
 	PackageNamePatterns *PackagePatternSet
 }
 
@@ -130,40 +128,36 @@ type Rule struct {
 	Denied []string
 }
 
-func (r *Rule) determinate(layers *OrderedSet[*Layer]) Decision {
+func (r *Rule) determinate(layers *sets.OrderedSet[*Layer]) Decision {
 	x := DecisionAllow
 	for _, allowedLayer := range r.Allowed {
-		if layers.containsByKey(allowedLayer) || allowedLayer == "*" {
+		if layers.HasKey(allowedLayer) || allowedLayer == "*" {
 			x = x.And(DecisionAllow)
 		}
 	}
 	for _, deniedLayer := range r.Denied {
-		if layers.containsByKey(deniedLayer) || deniedLayer == "*" {
+		if layers.HasKey(deniedLayer) || deniedLayer == "*" {
 			x = x.And(DecisionDeny)
 		}
 	}
 	return x
 }
 
-func NewLayersSet(layers ...*Layer) *OrderedSet[*Layer] {
-	x := initOrderedSet[*Layer]()
-	for _, layer := range layers {
-		x.add(layer)
-	}
-	return x
+func NewLayersSet(layers ...*Layer) *sets.OrderedSet[*Layer] {
+	return sets.NewOrderedSet(layers...)
 }
 
 // LayersSet is an ordered set of layers.
-type LayersSet OrderedSet[*Layer]
+type LayersSet sets.OrderedSet[*Layer]
 
-func (s *LayersSet) toSet() *OrderedSet[*Layer] {
+func (s *LayersSet) toSet() *sets.OrderedSet[*Layer] {
 	a := *s
-	b := OrderedSet[*Layer](a)
+	b := sets.OrderedSet[*Layer](a)
 	return &b
 }
 
 func (s *LayersSet) findByPackagePath(pkgPath string) *Layer {
-	for _, layer := range s.toSet().items() {
+	for _, layer := range s.toSet().Items() {
 		if containPackage(layer.PackageNames, layer.PackageNamePatterns, Package(pkgPath)) {
 			return layer
 		}
@@ -172,16 +166,16 @@ func (s *LayersSet) findByPackagePath(pkgPath string) *Layer {
 }
 
 type Config struct {
-	Layers *OrderedSet[*Layer]
+	Layers *sets.OrderedSet[*Layer]
 	Rules  []*Rule
 }
 
-func layersForPackages(layers *OrderedSet[*Layer], pkg Package) *OrderedSet[*Layer] {
-	x := initOrderedSet[*Layer]()
-	for _, layer := range layers.items() {
+func layersForPackages(layers *sets.OrderedSet[*Layer], pkg Package) *sets.OrderedSet[*Layer] {
+	x := sets.NewOrderedSet[*Layer]()
+	for _, layer := range layers.Items() {
 		layer := layer
 		if containPackage(layer.PackageNames, layer.PackageNamePatterns, pkg) {
-			x.add(layer)
+			x.Add(layer)
 		}
 	}
 	return x
@@ -222,58 +216,3 @@ const (
 	DecisionDeny Decision = iota
 	DecisionAllow
 )
-
-func initOrderedSet[T interface{ Key() string }]() *OrderedSet[T] {
-	return &OrderedSet[T]{set: map[string]int{}}
-}
-
-func NewOrderedSet[T interface{ Key() string }](xs ...T) *OrderedSet[T] {
-	set := initOrderedSet[T]()
-	for _, x := range xs {
-		set.add(x)
-	}
-	return set
-}
-
-type OrderedSet[T interface{ Key() string }] struct {
-	xs  []T
-	set map[string]int
-}
-
-func (s *OrderedSet[T]) add(x T) {
-	if _, found := s.set[x.Key()]; found {
-		return
-	}
-	s.xs = append(s.xs, x)
-	s.set[x.Key()] = len(s.xs) - 1
-}
-
-func (s *OrderedSet[T]) items() []T {
-	return s.xs
-}
-
-func (s *OrderedSet[T]) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s.items())
-}
-
-func (s *OrderedSet[T]) UnmarshalJSON(b []byte) error {
-	var vals []T
-	if err := json.Unmarshal(b, &vals); err != nil {
-		return err
-	}
-	xs := &OrderedSet[T]{set: map[string]int{}}
-	for _, x := range vals {
-		xs.add(x)
-	}
-	*s = *xs
-	return nil
-}
-
-func (s *OrderedSet[T]) contains(x T) bool {
-	return s.containsByKey(x.Key())
-}
-
-func (s *OrderedSet[T]) containsByKey(key string) bool {
-	_, ok := s.set[key]
-	return ok
-}
