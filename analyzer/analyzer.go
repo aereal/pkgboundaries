@@ -1,4 +1,4 @@
-package pkgboundaries
+package analyzer
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aereal/pkgboundaries"
 	"golang.org/x/tools/go/analysis"
 )
 
@@ -35,7 +36,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	if strings.HasSuffix(currentPkg, ".test") {
 		return nil, nil
 	}
-	var cfg *Config
+	var cfg *pkgboundaries.Config
 	f, err := os.Open(configPath)
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	if cfg.Layers == nil {
 		return nil, nil
 	}
-	currentLayer := (*LayersSet)(cfg.Layers).findByPackagePath(pass.Pkg.Path())
+	currentLayer := (*pkgboundaries.LayersSet)(cfg.Layers).FindByPackagePath(pass.Pkg.Path())
 	if currentLayer == nil {
 		return nil, nil
 	}
@@ -58,8 +59,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 			if err != nil {
 				continue
 			}
-			decision := cfg.CanDepend(currentLayer.Name, Package(importPath))
-			if decision == DecisionDeny {
+			decision := cfg.CanDepend(currentLayer.Name, pkgboundaries.Package(importPath))
+			if decision == pkgboundaries.DecisionDeny {
 				pass.Reportf(spec.Pos(), "%s cannot be imported by %s", spec.Path.Value, currentLayer.Name)
 			}
 		}

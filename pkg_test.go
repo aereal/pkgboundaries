@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/aereal/pkgboundaries"
+	"github.com/aereal/pkgboundaries/internal/sets"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
@@ -118,7 +119,7 @@ func TestConfig_Marshaling(t *testing.T) {
 	if err := json.Unmarshal(marshaled, &got); err != nil {
 		t.Fatal(err)
 	}
-	if diff := cmp.Diff(want, &got, cmpopts.IgnoreUnexported(pkgboundaries.OrderedSet[pkgboundaries.Package]{}, pkgboundaries.OrderedSet[*pkgboundaries.Layer]{})); diff != "" {
+	if diff := cmp.Diff(want, &got, cmpopts.IgnoreUnexported(sets.OrderedSet[pkgboundaries.Package]{}, sets.OrderedSet[*pkgboundaries.Layer]{})); diff != "" {
 		t.Errorf("json.Unmarshal (-want, +got):\n%s", diff)
 	}
 }
