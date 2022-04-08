@@ -8,15 +8,20 @@ import (
 )
 
 func Test(t *testing.T) {
-	testdata := analysistest.TestData()
-	clean := onion.SetConfigPathForTesting("./testdata/config.json")
-	defer clean()
-	analysistest.Run(t, testdata, onion.Analyzer, "github.com/aereal/a", "github.com/aereal/b")
-}
-
-func Test_withEmptyConfig(t *testing.T) {
-	testdata := analysistest.TestData()
-	clean := onion.SetConfigPathForTesting("./testdata/empty.json")
-	defer clean()
-	analysistest.Run(t, testdata, onion.Analyzer, "github.com/aereal/empty")
+	testCases := []struct {
+		configPath string
+		patterns   []string
+	}{
+		{"./testdata/config.json", []string{"github.com/aereal/a"}},
+		{"./testdata/b.json", []string{"github.com/aereal/b"}},
+		{"./testdata/empty.json", []string{"github.com/aereal/empty"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.configPath, func(t *testing.T) {
+			testdata := analysistest.TestData()
+			clean := onion.SetConfigPathForTesting(tc.configPath)
+			defer clean()
+			analysistest.Run(t, testdata, onion.Analyzer, tc.patterns...)
+		})
+	}
 }

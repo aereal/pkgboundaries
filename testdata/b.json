@@ -1,0 +1,41 @@
+{
+  "Layers": [
+    {
+      "Name": "App",
+      "PackageNames": [
+        "github.com/aereal/b"
+      ]
+    },
+    {
+      "Name": "Errors",
+      "PackageNames": [
+        "errors"
+      ]
+    },
+    {
+      "Name": "Print",
+      "PackageNames": [
+        "fmt",
+        "log"
+      ]
+    },
+    {
+      "Name": "Encoding",
+      "PackageNamePatterns": [
+        "^encoding/"
+      ]
+    }
+  ],
+  "Rules": [
+    {
+      "Layer": "App",
+      "Allowed": [
+        "Errors"
+      ],
+      "Denied": [
+        "Print",
+        "Encoding"
+      ]
+    }
+  ]
+}
