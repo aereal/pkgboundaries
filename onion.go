@@ -277,6 +277,10 @@ func (s *OrderedSet[T]) UnmarshalJSON(b []byte) error {
 }
 
 func (s *OrderedSet[T]) contains(x T) bool {
-	_, ok := s.set[x.Key()]
+	return s.containsByKey(x.Key())
+}
+
+func (s *OrderedSet[T]) containsByKey(key string) bool {
+	_, ok := s.set[key]
 	return ok
 }
