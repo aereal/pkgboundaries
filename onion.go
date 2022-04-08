@@ -130,24 +130,17 @@ type Rule struct {
 	Denied []string
 }
 
-func (r *Rule) deter(layer *Layer) Decision {
-	for _, layerName := range r.Allowed {
-		if layer.Name == layerName {
-			return DecisionAllow
-		}
-	}
-	for _, layerName := range r.Denied {
-		if layer.Name == layerName {
-			return DecisionDeny
-		}
-	}
-	return DecisionDeny
-}
-
 func (r *Rule) determinate(layers *OrderedSet[*Layer]) Decision {
 	x := DecisionAllow
-	for _, layer := range layers.items() {
-		x = x.And(r.deter(layer))
+	for _, allowedLayer := range r.Allowed {
+		if layers.containsByKey(allowedLayer) || allowedLayer == "*" {
+			x = x.And(DecisionAllow)
+		}
+	}
+	for _, deniedLayer := range r.Denied {
+		if layers.containsByKey(deniedLayer) || deniedLayer == "*" {
+			x = x.And(DecisionDeny)
+		}
 	}
 	return x
 }
@@ -277,6 +270,10 @@ func (s *OrderedSet[T]) UnmarshalJSON(b []byte) error {
 }
 
 func (s *OrderedSet[T]) contains(x T) bool {
-	_, ok := s.set[x.Key()]
+	return s.containsByKey(x.Key())
+}
+
+func (s *OrderedSet[T]) containsByKey(key string) bool {
+	_, ok := s.set[key]
 	return ok
 }
