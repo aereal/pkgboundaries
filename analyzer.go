@@ -19,7 +19,7 @@ var Analyzer = &analysis.Analyzer{
 var configPath string
 
 func init() {
-	Analyzer.Flags.StringVar(&configPath, "config", "onion.json", "config file path")
+	Analyzer.Flags.StringVar(&configPath, "config", "pkgboundaries.json", "config file path")
 }
 
 func SetConfigPathForTesting(path string) func() {
