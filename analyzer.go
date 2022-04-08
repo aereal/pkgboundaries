@@ -1,4 +1,4 @@
-package onion
+package pkgboundaries
 
 import (
 	"encoding/json"
@@ -11,15 +11,15 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "onion",
-	Doc:  "check import direction",
+	Name: "pkgboundaries",
+	Doc:  "check package boundaries",
 	Run:  run,
 }
 
 var configPath string
 
 func init() {
-	Analyzer.Flags.StringVar(&configPath, "config", "onion.json", "config file path")
+	Analyzer.Flags.StringVar(&configPath, "config", "pkgboundaries.json", "config file path")
 }
 
 func SetConfigPathForTesting(path string) func() {

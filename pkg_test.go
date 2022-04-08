@@ -1,4 +1,4 @@
-package onion_test
+package pkgboundaries_test
 
 import (
 	"encoding/json"
@@ -6,34 +6,34 @@ import (
 	"os"
 	"testing"
 
-	"github.com/aereal/onion"
+	"github.com/aereal/pkgboundaries"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
 func TestConfig_CanDepend(t *testing.T) {
-	cfg := &onion.Config{
-		Layers: onion.NewLayersSet(
-			&onion.Layer{Name: "a", PackageNames: onion.NewPackagesSet("pkg/1", "pkg/2")},
-			&onion.Layer{Name: "b", PackageNames: onion.NewPackagesSet("pkg/3", "pkg/4")},
-			&onion.Layer{Name: "c", PackageNames: onion.NewPackagesSet("pkg/5", "pkg/6")},
+	cfg := &pkgboundaries.Config{
+		Layers: pkgboundaries.NewLayersSet(
+			&pkgboundaries.Layer{Name: "a", PackageNames: pkgboundaries.NewPackagesSet("pkg/1", "pkg/2")},
+			&pkgboundaries.Layer{Name: "b", PackageNames: pkgboundaries.NewPackagesSet("pkg/3", "pkg/4")},
+			&pkgboundaries.Layer{Name: "c", PackageNames: pkgboundaries.NewPackagesSet("pkg/5", "pkg/6")},
 		),
-		Rules: []*onion.Rule{
+		Rules: []*pkgboundaries.Rule{
 			{Layer: "a", Allowed: []string{"b"}, Denied: []string{"c"}},
 		},
 	}
 	type args struct {
 		dependantLayerName string
-		dependency         onion.Package
+		dependency         pkgboundaries.Package
 	}
 	testCases := []struct {
 		name       string
 		args       args
-		wantEffect onion.Decision
+		wantEffect pkgboundaries.Decision
 	}{
-		{"ok", args{"a", "pkg/3"}, onion.DecisionAllow},
-		{"ng", args{"a", "pkg/5"}, onion.DecisionDeny},
-		{"ng (unknown)", args{"a", "pkg/x"}, onion.DecisionAllow},
+		{"ok", args{"a", "pkg/3"}, pkgboundaries.DecisionAllow},
+		{"ng", args{"a", "pkg/5"}, pkgboundaries.DecisionDeny},
+		{"ng (unknown)", args{"a", "pkg/x"}, pkgboundaries.DecisionAllow},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -47,12 +47,12 @@ func TestConfig_CanDepend(t *testing.T) {
 
 func TestEffect_And(t *testing.T) {
 	testCases := []struct {
-		x    onion.Decision
-		y    onion.Decision
-		want onion.Decision
+		x    pkgboundaries.Decision
+		y    pkgboundaries.Decision
+		want pkgboundaries.Decision
 	}{
-		{onion.DecisionAllow, onion.DecisionAllow, onion.DecisionAllow},
-		{onion.DecisionAllow, onion.DecisionDeny, onion.DecisionDeny},
+		{pkgboundaries.DecisionAllow, pkgboundaries.DecisionAllow, pkgboundaries.DecisionAllow},
+		{pkgboundaries.DecisionAllow, pkgboundaries.DecisionDeny, pkgboundaries.DecisionDeny},
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("x=%s y=%s", tc.x, tc.y), func(t *testing.T) {
@@ -70,7 +70,7 @@ func TestConfig_Marshaling(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer f.Close()
-	var fromData onion.Config
+	var fromData pkgboundaries.Config
 	if err := json.NewDecoder(f).Decode(&fromData); err != nil {
 		t.Fatal(err)
 	}
@@ -79,30 +79,30 @@ func TestConfig_Marshaling(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	want := &onion.Config{
-		Rules: []*onion.Rule{
+	want := &pkgboundaries.Config{
+		Rules: []*pkgboundaries.Rule{
 			{
 				Layer:   "App",
 				Allowed: []string{"Errors"},
 				Denied:  []string{"Print", "Encoding"},
 			},
 		},
-		Layers: onion.NewLayersSet(
-			&onion.Layer{
+		Layers: pkgboundaries.NewLayersSet(
+			&pkgboundaries.Layer{
 				Name:         "App",
-				PackageNames: onion.NewPackagesSet("github.com/aereal/a"),
+				PackageNames: pkgboundaries.NewPackagesSet("github.com/aereal/a"),
 			},
-			&onion.Layer{
+			&pkgboundaries.Layer{
 				Name:         "Errors",
-				PackageNames: onion.NewPackagesSet("errors"),
+				PackageNames: pkgboundaries.NewPackagesSet("errors"),
 			},
-			&onion.Layer{
+			&pkgboundaries.Layer{
 				Name:         "Print",
-				PackageNames: onion.NewPackagesSet("fmt", "log"),
+				PackageNames: pkgboundaries.NewPackagesSet("fmt", "log"),
 			},
-			&onion.Layer{
+			&pkgboundaries.Layer{
 				Name:                "Encoding",
-				PackageNamePatterns: onion.NewPackagePatternSet(onion.PackagePattern("^encoding/")),
+				PackageNamePatterns: pkgboundaries.NewPackagePatternSet(pkgboundaries.PackagePattern("^encoding/")),
 			},
 		),
 	}
@@ -114,11 +114,11 @@ func TestConfig_Marshaling(t *testing.T) {
 		t.Errorf("json.Marshal (-want, +got):\n%s", diff)
 	}
 
-	var got onion.Config
+	var got pkgboundaries.Config
 	if err := json.Unmarshal(marshaled, &got); err != nil {
 		t.Fatal(err)
 	}
-	if diff := cmp.Diff(want, &got, cmpopts.IgnoreUnexported(onion.OrderedSet[onion.Package]{}, onion.OrderedSet[*onion.Layer]{})); diff != "" {
+	if diff := cmp.Diff(want, &got, cmpopts.IgnoreUnexported(pkgboundaries.OrderedSet[pkgboundaries.Package]{}, pkgboundaries.OrderedSet[*pkgboundaries.Layer]{})); diff != "" {
 		t.Errorf("json.Unmarshal (-want, +got):\n%s", diff)
 	}
 }

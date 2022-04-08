@@ -1,9 +1,9 @@
-package onion_test
+package pkgboundaries_test
 
 import (
 	"testing"
 
-	"github.com/aereal/onion"
+	"github.com/aereal/pkgboundaries"
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 
@@ -21,9 +21,9 @@ func Test(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.configPath, func(t *testing.T) {
 			testdata := analysistest.TestData()
-			clean := onion.SetConfigPathForTesting(tc.configPath)
+			clean := pkgboundaries.SetConfigPathForTesting(tc.configPath)
 			defer clean()
-			analysistest.Run(t, testdata, onion.Analyzer, tc.patterns...)
+			analysistest.Run(t, testdata, pkgboundaries.Analyzer, tc.patterns...)
 		})
 	}
 }
