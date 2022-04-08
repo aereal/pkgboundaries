@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/aereal/pkgboundaries"
+	"github.com/aereal/pkgboundaries/analyzer"
 	"golang.org/x/tools/go/analysis/singlechecker"
 )
 
 func main() {
-	singlechecker.Main(pkgboundaries.Analyzer)
+	singlechecker.Main(analyzer.Analyzer)
 }

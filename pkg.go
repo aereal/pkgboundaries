@@ -156,7 +156,7 @@ func (s *LayersSet) toSet() *sets.OrderedSet[*Layer] {
 	return &b
 }
 
-func (s *LayersSet) findByPackagePath(pkgPath string) *Layer {
+func (s *LayersSet) FindByPackagePath(pkgPath string) *Layer {
 	for _, layer := range s.toSet().Items() {
 		if containPackage(layer.PackageNames, layer.PackageNamePatterns, Package(pkgPath)) {
 			return layer
