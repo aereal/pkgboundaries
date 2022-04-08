@@ -79,6 +79,7 @@ func (ps *PackagePatternSet) match(pkg Package) bool {
 	return ps.compiledPattern.MatchString(string(pkg))
 }
 
+// PackagePattern is a regular expression that matches packages.
 type PackagePattern string
 
 func (p PackagePattern) Key() string {
@@ -156,6 +157,7 @@ func (s *LayersSet) toSet() *sets.OrderedSet[*Layer] {
 	return &b
 }
 
+// FindByPackagePath returns a layer that the pkgPath belongs to.
 func (s *LayersSet) FindByPackagePath(pkgPath string) *Layer {
 	for _, layer := range s.toSet().Items() {
 		if containPackage(layer.PackageNames, layer.PackageNamePatterns, Package(pkgPath)) {
@@ -165,9 +167,13 @@ func (s *LayersSet) FindByPackagePath(pkgPath string) *Layer {
 	return nil
 }
 
+// Config is pkgboundaries' configuration.
 type Config struct {
+	// Layers is a set of layer definitions.
 	Layers *sets.OrderedSet[*Layer]
-	Rules  []*Rule
+
+	// Rules is a set of rules.
+	Rules []*Rule
 }
 
 func layersForPackages(layers *sets.OrderedSet[*Layer], pkg Package) *sets.OrderedSet[*Layer] {
