@@ -133,12 +133,12 @@ type Rule struct {
 func (r *Rule) determinate(layers *OrderedSet[*Layer]) Decision {
 	x := DecisionAllow
 	for _, allowedLayer := range r.Allowed {
-		if layers.containsByKey(allowedLayer) {
+		if layers.containsByKey(allowedLayer) || allowedLayer == "*" {
 			x = x.And(DecisionAllow)
 		}
 	}
 	for _, deniedLayer := range r.Denied {
-		if layers.containsByKey(deniedLayer) {
+		if layers.containsByKey(deniedLayer) || deniedLayer == "*" {
 			x = x.And(DecisionDeny)
 		}
 	}

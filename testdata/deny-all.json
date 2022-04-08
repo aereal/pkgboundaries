@@ -1,0 +1,18 @@
+{
+  "Layers": [
+    {
+      "Name": "App",
+      "PackageNames": [
+        "github.com/aereal/d"
+      ]
+    }
+  ],
+  "Rules": [
+    {
+      "Layer": "App",
+      "Denied": [
+        "*"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "Layers": [
+    {
+      "Name": "App",
+      "PackageNames": [
+        "github.com/aereal/c"
+      ]
+    }
+  ],
+  "Rules": [
+    {
+      "Layer": "App",
+      "Allowed": [
+        "*"
+      ]
+    }
+  ]
+}
