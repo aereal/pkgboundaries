@@ -12,7 +12,8 @@ func Test(t *testing.T) {
 		configPath string
 		patterns   []string
 	}{
-		{"./testdata/config.json", []string{"github.com/aereal/a", "github.com/aereal/b"}},
+		{"./testdata/config.json", []string{"github.com/aereal/a"}},
+		{"./testdata/b.json", []string{"github.com/aereal/b"}},
 		{"./testdata/empty.json", []string{"github.com/aereal/empty"}},
 	}
 	for _, tc := range testCases {
