@@ -1,4 +1,4 @@
-module github.com/aereal/onion
+module github.com/aereal/pkgboundaries
 
 go 1.18
 

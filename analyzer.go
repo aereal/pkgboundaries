@@ -1,4 +1,4 @@
-package onion
+package pkgboundaries
 
 import (
 	"encoding/json"
@@ -11,8 +11,8 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "onion",
-	Doc:  "check import direction",
+	Name: "pkgboundaries",
+	Doc:  "check package boundaries",
 	Run:  run,
 }
 
