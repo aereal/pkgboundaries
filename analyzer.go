@@ -44,6 +44,9 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	if err := json.NewDecoder(f).Decode(&cfg); err != nil {
 		return nil, err
 	}
+	if cfg.Layers == nil {
+		return nil, nil
+	}
 	currentLayer := (*LayersSet)(cfg.Layers).findByPackagePath(pass.Pkg.Path())
 	if currentLayer == nil {
 		return nil, nil

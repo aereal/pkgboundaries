@@ -13,3 +13,10 @@ func Test(t *testing.T) {
 	defer clean()
 	analysistest.Run(t, testdata, onion.Analyzer, "github.com/aereal/a", "github.com/aereal/b")
 }
+
+func Test_withEmptyConfig(t *testing.T) {
+	testdata := analysistest.TestData()
+	clean := onion.SetConfigPathForTesting("./testdata/empty.json")
+	defer clean()
+	analysistest.Run(t, testdata, onion.Analyzer, "github.com/aereal/empty")
+}
