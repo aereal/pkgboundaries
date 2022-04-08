@@ -19,7 +19,7 @@ func TestConfig_CanDepend(t *testing.T) {
 			&onion.Layer{Name: "c", PackageNames: onion.NewPackagesSet("pkg/5", "pkg/6")},
 		),
 		Rules: []*onion.Rule{
-			{Layer: "a", Allowed: []string{"b"}},
+			{Layer: "a", Allowed: []string{"b"}, Denied: []string{"c"}},
 		},
 	}
 	type args struct {
