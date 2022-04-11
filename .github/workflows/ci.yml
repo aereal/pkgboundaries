@@ -28,13 +28,15 @@ jobs:
           key: ${{ runner.os }}-go-1.18.x-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-1.18.x
-      - run: |
+      - name: build plugin
+        run: |
           rm -rf ./dist
           go build \
             -buildmode=plugin \
             -ldflags "-X 'main.flags=-config $PWD/testdata/config.json'" \
             -o ./dist/pkgboundaries.so \
             ./plugin
+          file ./dist/pkgboundaries.so
       - name: install golangci-lint
         run: |
           curl -o golangci-lint.tar.gz -sL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
