@@ -30,14 +30,19 @@ jobs:
             ${{ runner.os }}-go-1.18.x
       - run: |
           go build -buildmode=plugin -o ./dist ./plugin
-      - name: install golangci-lint
+      - name: download golangci-lint
         run: |
           curl -o golangci-lint.tar.gz -sL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
-          tar -xzf ./golangci-lint.tar.gz -C ./golangci-lint
-          ls -lAF
-          ls -lAF golangci-lint
         env:
           GOLANGCI_LINT_VERSION: "1.45.2"
+      - name: extract golangci-lint
+        run: |
+          mkdir -p ./golangci-lint
+          tar -xzf ./golangci-lint.tar.gz -C ./golangci-lint
+      - name: debug
+        run: |
+          ls -lAF
+          ls -lAF golangci-lint
   test:
     strategy:
       matrix:
