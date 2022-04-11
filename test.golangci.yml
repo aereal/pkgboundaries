@@ -1,6 +1,8 @@
 ---
 
 linters:
+  enable:
+    - pkgboundaries
   disable:
     - deadcode
     - staticcheck
