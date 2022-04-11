@@ -1,5 +1,12 @@
 ---
 
+linters:
+  disable:
+    - deadcode
+    - staticcheck
+    - gosimple
+    - unused
+    - structcheck
 linters-settings:
   custom:
     pkgboundaries:
