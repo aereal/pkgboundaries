@@ -9,6 +9,8 @@ import (
 
 var flags string
 
+var AnalyzerPlugin = analyzerPlugin(0)
+
 type analyzerPlugin int
 
 func (analyzerPlugin) GetAnalyzers() []*analysis.Analyzer {
