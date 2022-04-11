@@ -15,6 +15,21 @@ jobs:
         uses: reviewdog/action-golangci-lint@v2
         with:
           level: warning
+  build-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.18.x'
+      - uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-1.18.x-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-1.18.x
+      - run: |
+          go build -buildmode=plugin -o ./dist ./plugin
   test:
     strategy:
       matrix:
