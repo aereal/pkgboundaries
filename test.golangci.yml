@@ -1,0 +1,8 @@
+---
+
+linters-settings:
+  custom:
+    pkgboundaries:
+      path: ./dist/pkgboundaries.so
+      description: pkgboundaries
+      original-url: github.com/aereal/pkgboundaries

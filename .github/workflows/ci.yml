@@ -29,14 +29,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-1.18.x
       - run: |
-          go build -buildmode=plugin -o ./dist ./plugin
+          rm -rf ./dist
+          go build -buildmode=plugin -o ./dist/pkgboundaries.so ./plugin
       - name: install golangci-lint
         run: |
           curl -o golangci-lint.tar.gz -sL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
           tar -xzf ./golangci-lint.tar.gz
-          ls -lAF ./golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/
+          cp ./golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64/golangci-lint ./
         env:
           GOLANGCI_LINT_VERSION: "1.45.2"
+      - name: run golangci-lint
+        run: ./golangci-lint run --config test.golangci.yml ./...
   test:
     strategy:
       matrix:
