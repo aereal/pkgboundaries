@@ -33,7 +33,7 @@ jobs:
       - name: install golangci-lint
         run: |
           curl -o golangci-lint.tar.gz -sL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
-          tar xzf ./golangci-lint.tar.gz -C ./golangci-lint
+          tar -xzf ./golangci-lint.tar.gz -C ./golangci-lint
           ls -lAF
           ls -lAF golangci-lint
         env:
