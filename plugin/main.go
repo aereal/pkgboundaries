@@ -9,7 +9,7 @@ import (
 
 var flags string
 
-var AnalyzerPlugin = analyzerPlugin(0)
+var AnalyzerPlugin analyzerPlugin
 
 type analyzerPlugin int
 
