@@ -30,7 +30,11 @@ jobs:
             ${{ runner.os }}-go-1.18.x
       - run: |
           rm -rf ./dist
-          go build -buildmode=plugin -o ./dist/pkgboundaries.so ./plugin
+          go build \
+            -buildmode=plugin \
+            -ldflags "-X 'main.flags=-config $PWD/testdata/config.json'" \
+            -o ./dist/pkgboundaries.so \
+            ./plugin
       - name: install golangci-lint
         run: |
           curl -o golangci-lint.tar.gz -sL https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION}-linux-amd64.tar.gz
