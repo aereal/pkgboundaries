@@ -11,7 +11,7 @@ var flags string
 
 var AnalyzerPlugin analyzerPlugin
 
-type analyzerPlugin int
+type analyzerPlugin struct{}
 
 func (analyzerPlugin) GetAnalyzers() []*analysis.Analyzer {
 	if flags != "" {
