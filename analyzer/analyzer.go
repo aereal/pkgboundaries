@@ -71,6 +71,9 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	}
 	for _, file := range pass.Files {
 		if tf := pass.Fset.File(file.Pos()); tf != nil {
+			if strings.HasSuffix(tf.Name(), "_gen.go") {
+				continue
+			}
 			if skipTestPackages && strings.HasSuffix(tf.Name(), "_test.go") {
 				continue
 			}
