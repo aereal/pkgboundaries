@@ -17,10 +17,14 @@ var Analyzer = &analysis.Analyzer{
 	Run:  run,
 }
 
-var configPath string
+var (
+	configPath       string
+	skipTestPackages bool
+)
 
 func init() {
 	Analyzer.Flags.StringVar(&configPath, "config", "pkgboundaries.json", "config file path")
+	Analyzer.Flags.BoolVar(&skipTestPackages, "skip-test", false, "skip validating for test pacakges")
 }
 
 func SetConfigPathForTesting(path string) func() {
@@ -33,7 +37,7 @@ func SetConfigPathForTesting(path string) func() {
 
 func run(pass *analysis.Pass) (interface{}, error) {
 	currentPkg := pass.Pkg.Path()
-	if strings.HasSuffix(currentPkg, ".test") {
+	if strings.HasSuffix(currentPkg, ".test") && skipTestPackages {
 		return nil, nil
 	}
 	var cfg *pkgboundaries.Config
@@ -66,6 +70,14 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		}
 	}
 	for _, file := range pass.Files {
+		if tf := pass.Fset.File(file.Pos()); tf != nil {
+			if strings.HasSuffix(tf.Name(), "_gen.go") {
+				continue
+			}
+			if skipTestPackages && strings.HasSuffix(tf.Name(), "_test.go") {
+				continue
+			}
+		}
 		processFile(file)
 	}
 	return nil, nil
