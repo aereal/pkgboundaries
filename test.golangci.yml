@@ -1,0 +1,17 @@
+---
+
+linters:
+  enable:
+    - pkgboundaries
+  disable:
+    - deadcode
+    - staticcheck
+    - gosimple
+    - unused
+    - structcheck
+linters-settings:
+  custom:
+    pkgboundaries:
+      path: ./dist/pkgboundaries.so
+      description: pkgboundaries
+      original-url: github.com/aereal/pkgboundaries
