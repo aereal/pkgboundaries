@@ -1,3 +1,3 @@
 module github.com/aereal/d
 
-go 1.18
+go 1.19
