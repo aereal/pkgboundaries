@@ -1,3 +1,3 @@
 module github.com/aereal/c
 
-go 1.18
+go 1.21
