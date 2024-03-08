@@ -1,10 +1,12 @@
 module github.com/aereal/pkgboundaries
 
-go 1.21
+go 1.22
+
+toolchain go1.22.1
 
 require (
 	github.com/google/go-cmp v0.5.9
-	github.com/itchyny/rassemble-go v0.0.0-20210826142904-13306e87aaa2
+	github.com/itchyny/rassemble-go v0.1.1
 	golang.org/x/tools v0.1.12
 )
 
