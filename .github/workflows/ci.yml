@@ -75,7 +75,7 @@ jobs:
           key: ${{ runner.os }}-go-1.21.x-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - uses: goreleaser/goreleaser-action@v2.9.1
+      - uses: goreleaser/goreleaser-action@v5.1.0
         with:
           version: latest
           args: release --rm-dist
