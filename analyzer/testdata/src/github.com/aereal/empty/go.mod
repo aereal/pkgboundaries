@@ -1,3 +1,3 @@
 module github.com/aereal/empty
 
-go 1.21
+go 1.23.6
