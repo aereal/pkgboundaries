@@ -10,7 +10,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: lint
         uses: reviewdog/action-golangci-lint@v2
         with:
@@ -21,11 +21,11 @@ jobs:
         go_version: [ '1.18.x', '1.19.x', '1.20.x', '1.21.x', '1.22.x', '1.23.7' ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go_version }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ matrix.go_version }}-${{ hashFiles('**/go.sum') }}
@@ -44,7 +44,7 @@ jobs:
     outputs:
       will_release: ${{ steps.determine_release.outputs.new_release_published }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - id: determine_release
         uses: cycjimmy/semantic-release-action@v3.0.0
         with:
@@ -60,7 +60,7 @@ jobs:
       - determine_release
     if: ${{ needs.determine_release.outputs.will_release }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: cycjimmy/semantic-release-action@v3.0.0
@@ -69,7 +69,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: '1.23.7'
-      - uses: actions/cache@v4
+      - uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-1.23.7-${{ hashFiles('**/go.sum') }}
