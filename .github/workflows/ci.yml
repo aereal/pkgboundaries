@@ -18,7 +18,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go_version: [ '1.18.x', '1.19.x', '1.20.x', '1.21.x' ]
+        go_version: [ '1.18.x', '1.19.x', '1.20.x', '1.21.x', '1.22.x', '1.23.7' ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -35,7 +35,7 @@ jobs:
         run: go test -v -race -coverprofile=cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt -covermode=atomic ./...
       - name: upload coverage
         uses: codecov/codecov-action@v3
-        if: ${{ matrix.go_version == '1.21.x' }}
+        if: ${{ matrix.go_version == '1.23.7' }}
         with:
           files: ./cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt
   determine_release:
@@ -68,11 +68,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
       - uses: actions/setup-go@v3
         with:
-          go-version: '1.21.x'
+          go-version: '1.23.7'
       - uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-1.21.x-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-1.23.7-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
       - uses: goreleaser/goreleaser-action@v2.9.1
