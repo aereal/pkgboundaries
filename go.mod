@@ -1,6 +1,6 @@
 module github.com/aereal/pkgboundaries
 
-go 1.23.6
+go 1.23.7
 
 require (
 	github.com/google/go-cmp v0.5.9
