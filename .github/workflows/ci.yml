@@ -7,6 +7,13 @@ on:
     branches:
       - main
 jobs:
+  ok:
+    runs-on: ubuntu-24.04
+    needs:
+      - test-lint
+    if: failure()
+    steps:
+      - run: exit 1
   test-lint:
     strategy:
       matrix:
