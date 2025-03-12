@@ -1,6 +1,7 @@
 package analyzer_test
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/aereal/pkgboundaries/analyzer"
@@ -19,7 +20,7 @@ func Test(t *testing.T) {
 		{"../testdata/deny-all.json", []string{"github.com/aereal/d"}},
 	}
 	for _, tc := range testCases {
-		t.Run(tc.configPath, func(t *testing.T) {
+		t.Run(filepath.Base(tc.configPath), func(t *testing.T) {
 			testdata := analysistest.TestData()
 			clean := analyzer.SetConfigPathForTesting(tc.configPath)
 			defer clean()
