@@ -7,39 +7,67 @@ on:
     branches:
       - main
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+  ok:
+    runs-on: ubuntu-24.04
+    needs:
+      - test-lint
+    if: failure()
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: lint
-        uses: reviewdog/action-golangci-lint@dd3fda91790ca90e75049e5c767509dc0ec7d99b # v2.7.0
-        with:
-          level: warning
-  test:
+      - run: exit 1
+  test-lint:
     strategy:
       matrix:
         go_version: [ '1.18.x', '1.19.x', '1.20.x', '1.21.x' ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    env:
+      AQUA_CONFIG: ${{ github.workspace }}/aqua.yaml
+      AQUA_POLICY_CONFIG: ${{ github.workspace }}/aqua-policy.yaml
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+        id: setup-go
         with:
           go-version: ${{ matrix.go_version }}
-      - uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.go_version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go_version }}
+      - run: go mod download
+      - name: build
+        run: |
+          go build -o /dev/null ./...
       - name: test
-        run: go test -v -race -coverprofile=cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt -covermode=atomic ./...
-      - name: upload coverage
-        uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
-        if: ${{ matrix.go_version == '1.21.x' }}
+        id: test
+        run: go test -v -race -coverprofile=cover.out -covermode=atomic ./...
+      - uses: k1LoW/octocov-action@1ad702b3118b6a055c00b01db68ca0d9f6641dbc # v1.4.0
+        if: ${{ matrix.go_version == '1.21.x' && steps.test.outcome == 'success' }}
+      - uses: aquaproj/aqua-installer@e2d0136abcf70b7a2f6f505720640750557c4b33 # v3.1.1
         with:
-          files: ./cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt
+          aqua_version: v2.43.3
+      - run: aqua install
+      - name: golangci-lint
+        env:
+          _go_version: ${{ steps.setup-go.outputs.go-version }}
+        run: |
+          golangci-lint run \
+            --go "$_go_version" \
+            --out-format line-number \
+            --issues-exit-code 0 \
+            --config .golangci.yml \
+            1>lint-stdout.txt 2>/dev/stderr
+      - name: reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
+        run: |
+          reviewdog \
+            -name golangci-lint \
+            -f golangci-lint \
+            -filter-mode nofilter \
+            -reporter github-pr-check \
+            -fail-level warning \
+            < lint-stdout.txt
   determine_release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/main'
     outputs:
       will_release: ${{ steps.determine_release.outputs.new_release_published }}
@@ -53,10 +81,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
-      - test
-      - lint
+      - test-lint
       - determine_release
     if: ${{ needs.determine_release.outputs.will_release }}
     steps:
@@ -69,12 +96,6 @@ jobs:
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
           go-version: '1.21.x'
-      - uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-1.21.x-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
       - uses: goreleaser/goreleaser-action@90a3faa9d0182683851fbfa97ca1a2cb983bfca3 # v6.2.1
         with:
           version: latest

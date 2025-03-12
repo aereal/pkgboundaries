@@ -19,8 +19,8 @@ type HasKey interface {
 }
 
 type OrderedSet[T HasKey] struct {
-	items []T
 	set   map[string]int
+	items []T
 }
 
 func (s *OrderedSet[T]) Add(x T) {
