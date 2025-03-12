@@ -72,7 +72,7 @@ func TestConfig_Marshaling(t *testing.T) {
 	}
 	defer f.Close()
 	var fromData pkgboundaries.Config
-	if err := json.NewDecoder(f).Decode(&fromData); err != nil {
+	if err := json.NewDecoder(f).Decode(&fromData); err != nil { //nolint:govet
 		t.Fatal(err)
 	}
 	wantBytes, err := json.MarshalIndent(fromData, "", "  ")
