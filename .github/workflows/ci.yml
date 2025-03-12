@@ -26,12 +26,9 @@ jobs:
         with:
           go-version: ${{ matrix.go_version }}
       - name: test
-        run: go test -v -race -coverprofile=cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt -covermode=atomic ./...
-      - name: upload coverage
-        uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
+        run: go test -v -race -coverprofile=cover.out -covermode=atomic ./...
+      - uses: k1LoW/octocov-action@1ad702b3118b6a055c00b01db68ca0d9f6641dbc # v1.4.0
         if: ${{ matrix.go_version == '1.21.x' }}
-        with:
-          files: ./cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt
   determine_release:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
