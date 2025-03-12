@@ -102,9 +102,9 @@ func containPackage(pkgNames *sets.OrderedSet[Package], pkgPatterns *PackagePatt
 
 // Layer is a named set of packages.
 type Layer struct {
-	Name                string
 	PackageNames        *sets.OrderedSet[Package]
 	PackageNamePatterns *PackagePatternSet
+	Name                string
 }
 
 func (l *Layer) Key() string {
