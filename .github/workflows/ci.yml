@@ -29,7 +29,7 @@ jobs:
       AQUA_CONFIG: ${{ github.workspace }}/aqua.yaml
       AQUA_POLICY_CONFIG: ${{ github.workspace }}/aqua-policy.yaml
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         id: setup-go
         with:
@@ -74,7 +74,7 @@ jobs:
     outputs:
       will_release: ${{ steps.determine_release.outputs.new_release_published }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - id: determine_release
         uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # v4.1.1
         with:
@@ -89,7 +89,7 @@ jobs:
       - determine_release
     if: ${{ needs.determine_release.outputs.will_release }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           fetch-depth: 0
       - uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # v4.1.1
